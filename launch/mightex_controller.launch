@@ -1,6 +1,6 @@
 <launch>
   <arg name="current_max" default="1000"/>
-  <node name="mightex_controller" pkg="mightex_controller" type="mightex_controller.py">
+  <node name="mightex_controller_node" pkg="mightex_controller" type="mightex_controller_node.py">
     <param name="current_max" value="$(arg current_max)"/>
   </node>
 </launch>

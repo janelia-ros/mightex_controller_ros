@@ -10,7 +10,7 @@ import rospy
 from mightex_controller.msg import CmdCurrent,CmdChannel
 
 
-class MightexDeviceController(object):
+class MightexController(object):
     def __init__(self,*args,**kwargs):
         rospy.loginfo('Initializing mightex_device_controller...')
         self._initialized = False
@@ -47,8 +47,8 @@ class MightexDeviceController(object):
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('mightex_device_controller')
-        mdc = MightexDeviceController()
+        rospy.init_node('mightex_controller_node')
+        mdc = MightexController()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
