@@ -3,172 +3,52 @@
 #
 from __future__ import print_function,division
 
-from zaber_device import ZaberStage
+from mightex_device import MightexDevice
 
 import rospy
-from geometry_msgs.msg import Twist,Pose
-import actionlib
-from std_msgs.msg import Empty
 
-from mightex_device.srv import GetPose,GetPoseResponse
-from mightex_device.srv import Moving,MovingResponse
-
-from mightex_device.msg import EmptyAction
-from mightex_device.msg import MoveAction
+from mightex_device.msg import CmdCurrent,CmdChannel
 
 
-class ZaberStageController(object):
+class MightexDeviceController(object):
     def __init__(self,*args,**kwargs):
         rospy.loginfo('Initializing mightex_device_controller...')
         self._initialized = False
-        self._rate = rospy.Rate(4)
 
-        self._cmd_vel_sub = rospy.Subscriber('~cmd_vel',Twist,self._cmd_vel_callback)
-        self._stop_x_sub = rospy.Subscriber('~stop_x',Empty,self._stop_x_callback)
-        self._stop_y_sub = rospy.Subscriber('~stop_y',Empty,self._stop_y_callback)
-        self._stop_z_sub = rospy.Subscriber('~stop_z',Empty,self._stop_z_callback)
-        self._get_pose_srv = rospy.Service('~get_pose',GetPose,self._get_pose_callback)
-        self._moving_srv = rospy.Service('~moving',Moving,self._moving_callback)
-        self._home_action = actionlib.SimpleActionServer('~home', EmptyAction, self._home_callback, False)
-        self._move_relative_action = actionlib.SimpleActionServer('~move_relative', MoveAction, self._move_relative_callback, False)
-        self._move_absolute_action = actionlib.SimpleActionServer('~move_absolute', MoveAction, self._move_absolute_callback, False)
+        self._cmd_current_sub = rospy.Subscriber('~cmd_current',CmdCurrent,self._cmd_current_callback)
+        self._cmd_off_sub = rospy.Subscriber('~cmd_off',CmdChannel,self._cmd_off_callback)
 
-        x_serial_number = rospy.get_param('~x_serial_number', None)
-        if x_serial_number == '':
-            x_serial_number = None
-        x_alias = rospy.get_param('~x_alias', None)
-        if x_alias == '':
-            x_alias = None
-        y_serial_number = rospy.get_param('~y_serial_number', None)
-        if y_serial_number == '':
-            y_serial_number = None
-        y_alias = rospy.get_param('~y_alias', None)
-        if y_alias == '':
-            y_alias = None
-        z_serial_number = rospy.get_param('~z_serial_number', None)
-        if z_serial_number == '':
-            z_serial_number = None
-        z_alias = rospy.get_param('~z_alias', None)
-        if z_alias == '':
-            z_alias = None
-        axis_set = False
-        if (x_serial_number is not None) and (x_alias is not None):
-            axis_set = True
-        if (y_serial_number is not None) and (y_alias is not None):
-            axis_set = True
-        if (z_serial_number is not None) and (z_alias is not None):
-            axis_set = True
-        if not axis_set:
-            err_str = "Not enough mightex_device_controller axis arguments specified! (x_serial_number,x_alias,y_serial_number,y_alias,z_serial_number,z_alias)"
-            rospy.signal_shutdown(err_str)
-            rospy.logerr(err_str)
-        else:
-            self._stage = ZaberStage()
-            if (x_serial_number is not None) and (x_alias is not None):
-                self._stage.set_x_axis(x_serial_number,x_alias)
-            if (y_serial_number is not None) and (y_alias is not None):
-                self._stage.set_y_axis(y_serial_number,y_alias)
-            if (z_serial_number is not None) and (z_alias is not None):
-                self._stage.set_z_axis(z_serial_number,z_alias)
-            rospy.loginfo('mightex_device_controller initialized!')
-            self._home_action.start()
-            self._move_relative_action.start()
-            self._move_absolute_action.start()
-            self._initialized = True
+        current_max = rospy.get_param('~current_max')
+        self._dev = MightexDevice()
+        self._channel_count = self._dev.get_channel_count()
+        for channel in range(self._channel_count):
+            channel += 1
+            self._dev.set_normal_parameters(channel,current_max,1)
+        rospy.loginfo('mightex_device_controller initialized!')
+        self._initialized = True
 
-    def _cmd_vel_callback(self,data):
+    def _cmd_current_callback(self,data):
         if self._initialized:
-            x_vel = data.linear.x
-            y_vel = data.linear.y
-            z_vel = data.linear.z
-            self._stage.move_x_at_speed(x_vel)
-            self._stage.move_y_at_speed(y_vel)
-            self._stage.move_z_at_speed(z_vel)
+            channel = data.channel
+            current = data.current
+            if (channel >= 1) and (channel <= self._channel_count):
+                if current > 0:
+                    self._dev.set_normal_current(channel,current)
+                    self._dev.set_mode_normal(channel)
+                else:
+                    self._dev.set_mode_disable(channel)
 
-    def _stop_x_callback(self,data):
+    def _cmd_off_callback(self,data):
         if self._initialized:
-            self._stage.stop_x()
-
-    def _stop_y_callback(self,data):
-        if self._initialized:
-            self._stage.stop_y()
-
-    def _stop_z_callback(self,data):
-        if self._initialized:
-            self._stage.stop_z()
-
-    def _get_pose_callback(self,req):
-        while not self._initialized:
-            self._rate.sleep()
-        pose = Pose()
-        positions = self._stage.get_positions()
-        pose.position.x = positions[0]
-        pose.position.y = positions[1]
-        pose.position.z = positions[2]
-        return GetPoseResponse(pose)
-
-    def _moving_callback(self,req):
-        while not self._initialized:
-            self._rate.sleep()
-        res = MovingResponse()
-        moving = self._stage.moving()
-        res.x = moving[0]
-        res.y = moving[1]
-        res.z = moving[2]
-        return res
-
-    def _home_callback(self,req):
-        while not self._initialized:
-            self._rate.sleep()
-        self._stage.home()
-        finished = False
-        while not finished:
-            positions = self._stage.get_positions()
-            at_zero = [position == 0 for position in positions]
-            finished = all(at_zero)
-            if not finished:
-                self._rate.sleep()
-        self._home_action.set_succeeded()
-
-    def _move_relative_callback(self,req):
-        while not self._initialized:
-            self._rate.sleep()
-        rospy.loginfo("move_relative: x={0}, y={1}, z={2}".format(req.pose.position.x,
-                                                                  req.pose.position.y,
-                                                                  req.pose.position.z))
-        self._stage.move_x_relative(req.pose.position.x)
-        self._stage.move_y_relative(req.pose.position.y)
-        self._stage.move_z_relative(req.pose.position.z)
-        finished = False
-        while not finished:
-            moving = self._stage.moving()
-            finished = not any(moving)
-            if not finished:
-                self._rate.sleep()
-        self._move_relative_action.set_succeeded()
-
-    def _move_absolute_callback(self,req):
-        while not self._initialized:
-            self._rate.sleep()
-        rospy.loginfo("move_absolute: x={0}, y={1}, z={2}".format(req.pose.position.x,
-                                                                  req.pose.position.y,
-                                                                  req.pose.position.z))
-        self._stage.move_x_absolute(req.pose.position.x)
-        self._stage.move_y_absolute(req.pose.position.y)
-        self._stage.move_z_absolute(req.pose.position.z)
-        finished = False
-        while not finished:
-            moving = self._stage.moving()
-            finished = not any(moving)
-            if not finished:
-                self._rate.sleep()
-        self._move_absolute_action.set_succeeded()
+            channel = data.channel
+            if (channel >= 1) and (channel <= self._channel_count):
+                self._dev.set_mode_disable(channel)
 
 
 if __name__ == '__main__':
     try:
         rospy.init_node('mightex_device_controller')
-        zsc = ZaberStageController()
+        mdc = MightexDeviceController()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
