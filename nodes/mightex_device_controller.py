@@ -7,7 +7,7 @@ from mightex_device import MightexDevice
 
 import rospy
 
-from mightex_device.msg import CmdCurrent,CmdChannel
+from mightex_controller.msg import CmdCurrent,CmdChannel
 
 
 class MightexDeviceController(object):
