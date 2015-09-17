@@ -1,5 +1,5 @@
-mightex_device
-==============
+mightex_controller_ros
+======================
 
 Authors:
 
