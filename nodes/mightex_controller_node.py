@@ -12,7 +12,7 @@ from mightex_controller.msg import CmdCurrent,CmdChannel
 
 class MightexController(object):
     def __init__(self,*args,**kwargs):
-        rospy.loginfo('Initializing mightex_controller...')
+        rospy.loginfo('Initializing mightex_controller_node...')
         self._initialized = False
 
         self._cmd_current_sub = rospy.Subscriber('~cmd_current',CmdCurrent,self._cmd_current_callback)
@@ -24,7 +24,7 @@ class MightexController(object):
         for channel in range(self._channel_count):
             channel += 1
             self._dev.set_normal_parameters(channel,current_max,1)
-        rospy.loginfo('mightex_controller initialized!')
+        rospy.loginfo('mightex_controller_node initialized!')
         self._initialized = True
 
     def _cmd_current_callback(self,data):
