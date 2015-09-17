@@ -48,7 +48,7 @@ class MightexController(object):
 if __name__ == '__main__':
     try:
         rospy.init_node('mightex_controller_node')
-        mdc = MightexController()
+        mc = MightexController()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
