@@ -19,7 +19,7 @@ class MightexController(object):
 
         self._cmd_current_sub = rospy.Subscriber('~cmd_current',CmdCurrent,self._cmd_current_callback)
         self._cmd_off_sub = rospy.Subscriber('~cmd_off',CmdChannel,self._cmd_off_callback)
-        self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self.all_off)
+        self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
         current_max = rospy.get_param('~current_max')
         self._dev = MightexDevice()
@@ -46,6 +46,10 @@ class MightexController(object):
             channel = data.channel
             if (channel >= 1) and (channel <= self._channel_count):
                 self._dev.set_mode_disable(channel)
+
+    def _cmd_all_off_callback(self,data):
+        if self._initialized:
+            self.all_off()
 
     def all_off(self):
         if self._initialized:
