@@ -20,3 +20,6 @@ rostopic pub -1 /mightex_controller_node/cmd_current mightex_controller/CmdCurre
 rostopic pub -1 /mightex_controller_node/cmd_off mightex_controller/CmdChannel -- 1
 ```
 
+##Mightex Device Python Module
+
+For more information, see [mightex_device_python](https://github.com/janelia-pypi/mightex_device_python)
