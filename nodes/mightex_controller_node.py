@@ -21,17 +21,27 @@ class MightexController(object):
         self._cmd_off_sub = rospy.Subscriber('~cmd_off',CmdChannel,self._cmd_off_callback)
         self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
-        current_max = rospy.get_param('~current_max')
         self._dev = MightexDevice()
+        rospy.loginfo('mightex_controller_node initialized!')
+        self._setup = False
+        self._initialized = True
+
+    def _setup_device(self):
         self._channel_count = self._dev.get_channel_count()
+        if self._channel_count == 0:
+            rospy.logwarn('mightex_controller found no device channels!')
+        else:
+            rospy.logwarn('mightex_controller found {0} device channels!'.format(self._channel_count))
+            self._setup = True
+        current_max = rospy.get_param('~current_max')
         for channel in range(self._channel_count):
             channel += 1
             self._dev.set_normal_parameters(channel,current_max,1)
-        rospy.loginfo('mightex_controller_node initialized!')
-        self._initialized = True
 
     def _cmd_current_callback(self,data):
         if self._initialized:
+            if not self._setup:
+                self._setup_device()
             channel = data.channel
             current = data.current
             if (channel >= 1) and (channel <= self._channel_count):
@@ -43,25 +53,31 @@ class MightexController(object):
 
     def _cmd_off_callback(self,data):
         if self._initialized:
+            if not self._setup:
+                self._setup_device()
             channel = data.channel
             if (channel >= 1) and (channel <= self._channel_count):
                 self._dev.set_mode_disable(channel)
 
     def _cmd_all_off_callback(self,data):
         if self._initialized:
+            if not self._setup:
+                self._setup_device()
             self.all_off()
 
     def all_off(self):
         if self._initialized:
+            if not self._setup:
+                self._setup_device()
             for channel in range(self._channel_count):
                 channel += 1
                 self._dev.set_mode_disable(channel)
 
 
 if __name__ == '__main__':
+    rospy.init_node('mightex_controller_node')
+    mc = MightexController()
     try:
-        rospy.init_node('mightex_controller_node')
-        mc = MightexController()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
