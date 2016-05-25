@@ -23,6 +23,8 @@ class MightexController(object):
 
         self._dev = MightexDevice()
         rospy.loginfo('mightex_controller_node initialized!')
+        self._feedback_period = 0.25
+        self._last_update_time = 0
         self._setup = False
         self._initialized = True
 
@@ -40,6 +42,10 @@ class MightexController(object):
 
     def _cmd_current_callback(self,data):
         if self._initialized:
+            time_now = rospy.get_time()
+            if (time_now - self._last_update_time) < self._feedback_period:
+                return
+            self._last_update_time = time_now
             rospy.loginfo('mightex_controller channel: {0}, current {1}'.format(data.channel,data.current))
             if not self._setup:
                 self._setup_device()
