@@ -29,9 +29,9 @@ class MightexController(object):
     def _setup_device(self):
         self._channel_count = self._dev.get_channel_count()
         if self._channel_count == 0:
-            rospy.logwarn('mightex_controller found no device channels!')
+            rospy.loginfo('mightex_controller found no device channels!')
         else:
-            rospy.logwarn('mightex_controller found {0} device channels!'.format(self._channel_count))
+            rospy.loginfo('mightex_controller found {0} device channels!'.format(self._channel_count))
             self._setup = True
         current_max = rospy.get_param('~current_max')
         for channel in range(self._channel_count):
@@ -40,6 +40,7 @@ class MightexController(object):
 
     def _cmd_current_callback(self,data):
         if self._initialized:
+            rospy.loginfo('mightex_controller channel: {0}, current {1}'.format(data.channel,data.current))
             if not self._setup:
                 self._setup_device()
             channel = data.channel
@@ -53,6 +54,7 @@ class MightexController(object):
 
     def _cmd_off_callback(self,data):
         if self._initialized:
+            rospy.loginfo('mightex_controller cmd_off')
             if not self._setup:
                 self._setup_device()
             channel = data.channel
@@ -61,6 +63,7 @@ class MightexController(object):
 
     def _cmd_all_off_callback(self,data):
         if self._initialized:
+            rospy.loginfo('mightex_controller cmd_all_off')
             if not self._setup:
                 self._setup_device()
             self.all_off()
