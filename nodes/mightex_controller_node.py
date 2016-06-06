@@ -4,7 +4,6 @@
 from __future__ import print_function,division
 
 from mightex_device import MightexDevice
-from serial_device2 import WriteFrequencyError
 
 import rospy
 
@@ -23,9 +22,9 @@ class MightexController(object):
         self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
         self._dev = MightexDevice()
-        self._WRITE_WRITE_DELAY = 0.01
         rospy.loginfo('mightex_controller_node initialized!')
         self._setup = False
+        self._lock = threading.Lock()
         self._initialized = True
 
     def _setup_device(self):
@@ -54,14 +53,11 @@ class MightexController(object):
                 if current > 0:
                     self._dev.set_normal_current(channel,current)
                     if not self._enabled[channel]:
-                        time.sleep(self._WRITE_WRITE_DELAY)
                         self._dev.set_mode_normal(channel)
                         self._enabled[channel] = True
                 else:
                     self._dev.set_mode_disable(channel)
                     self._enabled[channel] = False
-            # except WriteFrequencyError:
-            #     pass
 
     def _cmd_off_callback(self,data):
         if self._initialized:
