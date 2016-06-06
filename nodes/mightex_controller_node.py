@@ -24,7 +24,6 @@ class MightexController(object):
         self._dev = MightexDevice()
         rospy.loginfo('mightex_controller_node initialized!')
         self._setup = False
-        self._lock = threading.Lock()
         self._initialized = True
 
     def _setup_device(self):
