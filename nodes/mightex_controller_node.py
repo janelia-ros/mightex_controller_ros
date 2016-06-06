@@ -23,6 +23,7 @@ class MightexController(object):
         self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
         self._dev = MightexDevice()
+        self._WRITE_WRITE_DELAY = 0.01
         rospy.loginfo('mightex_controller_node initialized!')
         self._setup = False
         self._initialized = True
@@ -45,22 +46,22 @@ class MightexController(object):
     def _cmd_current_callback(self,data):
         if self._initialized:
             # rospy.loginfo('mightex_controller channel: {0}, current {1}'.format(data.channel,data.current))
-            try:
-                if not self._setup:
-                    self._setup_device()
-                channel = data.channel
-                current = data.current
-                if (channel >= 1) and (channel <= self._channel_count):
-                    if current > 0:
-                        self._dev.set_normal_current(channel,current)
-                        if not self._enabled[channel]:
-                            self._dev.set_mode_normal(channel)
-                            self._enabled[channel] = True
-                    else:
-                        self._dev.set_mode_disable(channel)
-                        self._enabled[channel] = False
-            except WriteFrequencyError:
-                pass
+            if not self._setup:
+                self._setup_device()
+            channel = data.channel
+            current = data.current
+            if (channel >= 1) and (channel <= self._channel_count):
+                if current > 0:
+                    self._dev.set_normal_current(channel,current)
+                    if not self._enabled[channel]:
+                        time.sleep(self._WRITE_WRITE_DELAY)
+                        self._dev.set_mode_normal(channel)
+                        self._enabled[channel] = True
+                else:
+                    self._dev.set_mode_disable(channel)
+                    self._enabled[channel] = False
+            # except WriteFrequencyError:
+            #     pass
 
     def _cmd_off_callback(self,data):
         if self._initialized:
