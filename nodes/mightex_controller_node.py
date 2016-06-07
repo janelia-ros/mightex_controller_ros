@@ -5,6 +5,8 @@ from __future__ import print_function,division
 
 from mightex_device import MightexDevice
 
+from serial_device2 import ReadError
+
 import rospy
 
 from mightex_controller.msg import CmdCurrent,CmdChannel
@@ -24,22 +26,30 @@ class MightexController(object):
         self._dev = MightexDevice()
         rospy.loginfo('mightex_controller_node initialized!')
         self._setup = False
+        self._setup_device()
         self._initialized = True
 
     def _setup_device(self):
-        self._channel_count = self._dev.get_channel_count()
-        self._enabled = []
-        for channel in range(self._channel_count):
-            self._enabled.append(False)
-        if self._channel_count == 0:
-            rospy.loginfo('mightex_controller found no device channels!')
-        else:
-            rospy.loginfo('mightex_controller found {0} device channels!'.format(self._channel_count))
-            self._setup = True
-        current_max = rospy.get_param('~current_max')
-        for channel in range(self._channel_count):
-            channel += 1
-            self._dev.set_normal_parameters(channel,current_max,1)
+        setup_attempts_max = 10
+        setup_attempt = 0
+        while (not self._setup) and (setup_attempt < setup_attempts_max):
+            setup_attempt += 1
+            try:
+                self._channel_count = self._dev.get_channel_count()
+                self._enabled = []
+                for channel in range(self._channel_count):
+                    self._enabled.append(False)
+                if self._channel_count == 0:
+                    rospy.loginfo('mightex_controller found no device channels!')
+                else:
+                    rospy.loginfo('mightex_controller found {0} device channels!'.format(self._channel_count))
+                    self._setup = True
+                current_max = rospy.get_param('~current_max')
+                for channel in range(self._channel_count):
+                    channel += 1
+                    self._dev.set_normal_parameters(channel,current_max,1)
+            except ReadError:
+                pass
 
     def _cmd_current_callback(self,data):
         if self._initialized:
