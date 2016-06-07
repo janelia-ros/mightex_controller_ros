@@ -51,12 +51,12 @@ class MightexController(object):
             if (channel >= 1) and (channel <= self._channel_count):
                 if current > 0:
                     self._dev.set_normal_current(channel,current)
-                    if not self._enabled[channel]:
+                    if not self._enabled[channel-1]:
                         self._dev.set_mode_normal(channel)
-                        self._enabled[channel] = True
+                        self._enabled[channel-1] = True
                 else:
                     self._dev.set_mode_disable(channel)
-                    self._enabled[channel] = False
+                    self._enabled[channel-1] = False
 
     def _cmd_off_callback(self,data):
         if self._initialized:
@@ -66,7 +66,7 @@ class MightexController(object):
             channel = data.channel
             if (channel >= 1) and (channel <= self._channel_count):
                 self._dev.set_mode_disable(channel)
-                self._enabled[channel] = False
+                self._enabled[channel-1] = False
 
     def _cmd_all_off_callback(self,data):
         if self._initialized:
@@ -82,7 +82,7 @@ class MightexController(object):
             for channel in range(self._channel_count):
                 channel += 1
                 self._dev.set_mode_disable(channel)
-                self._enabled[channel] = False
+                self._enabled[channel-1] = False
 
 
 if __name__ == '__main__':
