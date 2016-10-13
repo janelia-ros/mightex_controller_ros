@@ -1,5 +1,4 @@
-mightex_controller_ros
-======================
+#mightex_controller_ros
 
 Authors:
 
@@ -16,8 +15,8 @@ roslaunch mightex_controller mightex_controller.launch
 ```
 
 ```shell
-rostopic pub -1 /mightex_controller_node/cmd_current mightex_controller/CmdCurrent -- 1 200
-rostopic pub -1 /mightex_controller_node/cmd_off mightex_controller/CmdChannel -- 1
+rostopic pub -1 /mightex_controller_node/cmd_current mightex_controller/CmdCurrent -- 0 200
+rostopic pub -1 /mightex_controller_node/cmd_off mightex_controller/CmdChannel -- 0
 ```
 
 ##Mightex Device Python Module
