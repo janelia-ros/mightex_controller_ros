@@ -46,7 +46,6 @@ class MightexController(object):
                     self._setup = True
                 current_max = rospy.get_param('~current_max')
                 for channel in range(self._channel_count):
-                    channel += 1
                     self._dev.set_normal_parameters(channel,current_max,1)
             except ReadError:
                 pass
@@ -61,12 +60,12 @@ class MightexController(object):
             if (channel >= 0) and (channel < self._channel_count):
                 if current > 0:
                     self._dev.set_normal_current(channel,current)
-                    if not self._enabled[channel-1]:
+                    if not self._enabled[channel]:
                         self._dev.set_mode_normal(channel)
-                        self._enabled[channel-1] = True
+                        self._enabled[channel] = True
                 else:
                     self._dev.set_mode_disable(channel)
-                    self._enabled[channel-1] = False
+                    self._enabled[channel] = False
 
     def _cmd_off_callback(self,data):
         if self._initialized:
@@ -76,7 +75,7 @@ class MightexController(object):
             channel = data.channel
             if (channel >= 0) and (channel < self._channel_count):
                 self._dev.set_mode_disable(channel)
-                self._enabled[channel-1] = False
+                self._enabled[channel] = False
 
     def _cmd_all_off_callback(self,data):
         if self._initialized:
@@ -90,9 +89,8 @@ class MightexController(object):
             if not self._setup:
                 self._setup_device()
             for channel in range(self._channel_count):
-                channel += 1
                 self._dev.set_mode_disable(channel)
-                self._enabled[channel-1] = False
+                self._enabled[channel] = False
 
 
 if __name__ == '__main__':
