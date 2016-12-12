@@ -58,7 +58,7 @@ class MightexController(object):
                 self._setup_device()
             channel = data.channel
             current = data.current
-            if (channel >= 1) and (channel <= self._channel_count):
+            if (channel >= 0) and (channel < self._channel_count):
                 if current > 0:
                     self._dev.set_normal_current(channel,current)
                     if not self._enabled[channel-1]:
@@ -74,7 +74,7 @@ class MightexController(object):
             if not self._setup:
                 self._setup_device()
             channel = data.channel
-            if (channel >= 1) and (channel <= self._channel_count):
+            if (channel >= 0) and (channel < self._channel_count):
                 self._dev.set_mode_disable(channel)
                 self._enabled[channel-1] = False
 
