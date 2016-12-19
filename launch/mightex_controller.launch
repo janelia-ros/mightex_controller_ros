@@ -1,6 +1,8 @@
 <launch>
+  <arg name="serial_port" default=""/>
   <arg name="current_max" default="1000"/>
   <node name="mightex_controller_node" pkg="mightex_controller" type="mightex_controller_node.py">
+    <param name="serial_port" value="$(arg serial_port)"/>
     <param name="current_max" value="$(arg current_max)"/>
   </node>
 </launch>

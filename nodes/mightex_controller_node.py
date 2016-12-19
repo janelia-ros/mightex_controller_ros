@@ -23,7 +23,11 @@ class MightexController(object):
         self._cmd_off_sub = rospy.Subscriber('~cmd_off',CmdChannel,self._cmd_off_callback)
         self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
-        self._dev = MightexDevice()
+        serial_port = rospy.get_param('~serial_port',None)
+        if serial_port is not None:
+            self._dev = MightexDevice(port=serial_port)
+        else:
+            self._dev = MightexDevice()
         rospy.loginfo('mightex_controller_node initialized!')
         self._setup = False
         self._setup_device()
