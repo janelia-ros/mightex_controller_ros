@@ -24,7 +24,7 @@ class MightexController(object):
         self._cmd_all_off_sub = rospy.Subscriber('~cmd_all_off',Empty,self._cmd_all_off_callback)
 
         serial_port = rospy.get_param('~serial_port',None)
-        if serial_port is not None:
+        if (serial_port is not None) and (len(serial_port) > 0):
             self._dev = MightexDevice(port=serial_port)
         else:
             self._dev = MightexDevice()
