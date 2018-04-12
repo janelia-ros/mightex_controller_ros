@@ -1,0 +1,22 @@
+#+TITLE: mightex_controller_ros
+#+AUTHOR: Peter Polidoro
+#+EMAIL: peterpolidoro@gmail.com
+
+* Package Information
+  - Author :: Peter Polidoro
+  - License :: BSD
+
+* Running
+
+  #+BEGIN_SRC sh
+roslaunch mightex_controller mightex_controller.launch
+  #+END_SRC
+
+  #+BEGIN_SRC sh
+rostopic pub -1 /mightex_controller_node/cmd_current mightex_controller/CmdCurrent -- 0 200
+rostopic pub -1 /mightex_controller_node/cmd_off mightex_controller/CmdChannel -- 0
+  #+END_SRC
+
+* Mightex Device Python Module
+
+  For more information, see [[https://github.com/janelia-pypi/mightex_device_python][mightex_device_python]]
