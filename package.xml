@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The mightex_device package</description>
 
-  <maintainer email="polidorop@janelia.hhmi.org">Peter Polidoro</maintainer>
+  <maintainer email="peterpolidoro@gmail.com">Peter Polidoro</maintainer>
 
   <license>BSD</license>
 
@@ -12,7 +12,7 @@
   <url type="bugtracker">https://github.com/janelia-ros/mightex_device_ros/issues</url>
   <url type="repository">https://github.com/janelia-ros/mightex_device_ros</url>
 
-  <author email="polidorop@janelia.hhmi.org">Peter Polidoro</author>
+  <author email="peterpolidoro@gmail.com">Peter Polidoro</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
